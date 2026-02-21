@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PHOTOS, CATEGORIES, Photo } from "@/lib/photos";
-import { X, ZoomIn, ChevronLeft, ChevronRight, MapPin, Calendar, Download } from "lucide-react";
+import { X, ZoomIn, ChevronLeft, ChevronRight, MapPin, Calendar } from "lucide-react";
 
 // Lightbox
 function Lightbox({
@@ -127,7 +127,7 @@ function PhotoCard({ photo, onClick }: { photo: Photo; onClick: () => void }) {
   );
 }
 
-export default function GalleryPage() {
+function GalleryContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -196,11 +196,10 @@ export default function GalleryPage() {
               <button
                 key={cat.id}
                 onClick={() => changeCategory(cat.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  activeCategory === cat.id
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${activeCategory === cat.id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                }`}
+                  }`}
               >
                 {cat.label}
               </button>
@@ -251,5 +250,17 @@ export default function GalleryPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function GalleryPage() {
+  return (
+    <Suspense fallback={
+      <div className="pt-32 min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    }>
+      <GalleryContent />
+    </Suspense>
   );
 }

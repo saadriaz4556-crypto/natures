@@ -22,11 +22,34 @@ export default function ContactPage() {
     }
     setSending(true);
     setError("");
-    // Simulate sending (integrate with email service in production)
-    await new Promise(r => setTimeout(r, 1200));
-    setSending(false);
-    setSent(true);
-    setForm({ name: "", email: "", subject: "", message: "" });
+
+    try {
+      // Import exactly where it's needed to avoid lifting the import to the top if not wanted,
+      // but it's better to import at top. I'll use the top-level import logic in my next tool replacement or just do it inline here.
+      const { supabase } = await import('@/lib/supabaseClient');
+
+      // We assume the table is named `contact_messages`. 
+      // If the user named it differently in Supabase, they need to update this string.
+      const { error: submitError } = await supabase
+        .from('users')
+        .insert([
+          {
+            Name: form.name,
+            Email: form.email,
+            Message: form.message
+          }
+        ]);
+
+      if (submitError) throw submitError;
+
+      setSent(true);
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch (err: any) {
+      console.error("Error submitting form:", err);
+      setError(err.message || "Failed to send message. Please try again later.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
